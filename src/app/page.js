@@ -1,170 +1,167 @@
-"use client"
+"use client";
 
-import Image from "next/image";
-
+import { process } from "@progress/kendo-data-query";
 import { Button } from "@progress/kendo-react-buttons";
+import { ExcelExport } from "@progress/kendo-react-excel-export";
+import { Grid, GridColumn, GridToolbar } from "@progress/kendo-react-grid";
+import { GridPDFExport } from "@progress/kendo-react-pdf";
+import * as React from "react";
+import orders from "./orders.json";
 
-import { 
-  Card, 
-  CardActions,
-  CardBody, 
-  CardHeader, 
-  CardTitle 
-} from "@progress/kendo-react-layout";
+const DetailComponent = (props) => {
+  const dataItem = props.dataItem;
+  return (
+    <div>
+      <section style={{ width: "200px", float: "left" }}>
+        <p>
+          <strong>Rua:</strong> {dataItem.shipAddress.street}
+        </p>
+        <p>
+          <strong>City:</strong> {dataItem.shipAddress.city}
+        </p>
+        <p>
+          <strong>Country:</strong> {dataItem.shipAddress.country}
+        </p>
+        <p>
+          <strong>Postal Code:</strong> {dataItem.shipAddress.postalCode}
+        </p>
+      </section>
+      <Grid style={{ width: "500px" }} data={dataItem.details} />
+    </div>
+  );
+};
 
-import styles from "./page.module.css";
+export default function GridNextjs() {
+  const [dataState, setDataState] = React.useState({
+    skip: 0,
+    take: 20,
+    sort: [{ field: "orderDate", dir: "desc" }],
+    group: [{ field: "customerID" }],
+  });
+  const [dataResult, setDataResult] = React.useState(
+    process(orders, dataState)
+  );
 
-import { useRouter } from 'next/navigation';
+  const dataStateChange = (event) => {
+    setDataResult(process(orders, event.dataState));
+    setDataState(event.dataState);
+  };
 
-export default function Home() {
-  const router = useRouter();
+  const expandChange = (event) => {
+    const isExpanded =
+      event.dataItem.expanded === undefined
+        ? event.dataItem.aggregates
+        : event.dataItem.expanded;
+    event.dataItem.expanded = !isExpanded;
+
+    setDataResult({ ...dataResult, data: [...dataResult.data] });
+  };
+
+  let _pdfExport;
+  const exportExcel = () => {
+    _export.save();
+  };
+
+  let _export;
+  const exportPDF = () => {
+    _pdfExport.save();
+  };
 
   return (
-    <div className={styles.page}>
-      <header className={styles.header}>
-        <h2>KendoReact ❤️ Next.js</h2>
-        <div>
-          <Button themeColor="primary" fillMode="flat" className="k-mr-1">Home</Button>
-          <Button themeColor="primary" fillMode="flat" onClick={() => router.push('/grid')}>Grid</Button>
-        </div>
-      </header>
-      <div className={styles.container}>
-        <Image
-          className={styles.reactLogo}
-          src="/react.svg"
-          alt="React Logo"
-          width={886}
-          height={788}
-          priority
-        />
-        <div className="k-d-flex k-flex-col">
-          <h1 className={styles.title}>Wellcome to KendoReact</h1>
-          <h3 className={styles.subtitle}>Comprehensive React UI Component Library</h3>
-          <div className="k-mt-3">
-            <Button themeColor="primary" className="k-mr-2">
-              <a href="https://www.telerik.com/kendo-react-ui" target="_blank">Try KendoReact</a>
+    <div>
+      <ExcelExport
+        data={orders}
+        ref={(exporter) => {
+          _export = exporter;
+        }}
+      >
+        <Grid
+          id="test"
+          style={{ height: "700px" }}
+          sortable={true}
+          filterable={true}
+          groupable={true}
+          reorderable={true}
+          pageable={{ buttonCount: 4, pageSizes: true }}
+          data={dataResult}
+          {...dataState}
+          onDataStateChange={dataStateChange}
+          detail={DetailComponent}
+          expandField="expanded"
+          onExpandChange={expandChange}
+        >
+          <GridToolbar>
+            &nbsp;&nbsp;&nbsp;
+            <Button title="Export to Excel" onClick={exportExcel}>
+              Export to Excel
             </Button>
-            <Button themeColor="secondary" fillMode="solid">
-              <a href="https://vercel.com/" target="_blank">More about Next.js</a>
-            </Button>
-          </div>
-        </div>
-      </div>
-
-      <section className={styles.section}>
-        <div className={styles.container}>
-          <div className="k-pl-8">
-            <h5 className={styles.sectionTitle}>Get started</h5>
-            <p>Edit index page at or set up data source at <code>src/app/page.js</code> or set up data source at <code>src/app/grid/orders.json</code></p>
-          </div>
-        </div>
-      </section>
-
-      <section className={styles.cardsSection}>
-        <div className={styles.cardsWrapper}>
-          <h5 className={styles.sectionTitle}>Highlights</h5>
-          <div className={styles.cardsContainer}>
-            <Card className={styles.card}>
-              <CardHeader className={styles.cardHeader}>
-                <Image
-                    src="/documentation.svg"
-                    alt="Documentation Logo"
-                    width={64}
-                    height={64}
-                    priority
-                  />
-                <CardTitle className={styles.cardTitle}>Documentation</CardTitle>
-              </CardHeader>
-              <CardBody>
-                <p className={styles.cardBody}>
-                  Unlock the full potential of our features! Check KendoReact Documentation for step-by-step guides and insights.
-                </p>
-              </CardBody>
-              <CardActions>
-                <Button themeColor="primary" fillMode="flat">
-                  <a href="https://www.telerik.com/kendo-react-ui/components/" target="_blank">Learn more</a>
-                </Button>
-              </CardActions>
-            </Card>
-
-            <Card className={styles.card}>
-              <CardHeader className={styles.cardHeader}>
-                <Image
-                  src="/classroom.svg"
-                  alt="Virtual Classroom Logo"
-                  width={64}
-                  height={64}
-                  priority
-                />
-                <CardTitle className={styles.cardTitle}>Virtual Classroom</CardTitle>
-              </CardHeader>
-              <CardBody>
-                <p className={styles.cardBody}>
-                  Need to quickly get started with KendoReact or just prefer video on-boarding materials we have Virtual Classroom for you.
-                </p>
-              </CardBody>
-              <CardActions>
-                <Button themeColor="primary" fillMode="flat">
-                  <a href="https://rb.gy/w21cc8" target="_blank">Get Started</a>
-                </Button>
-              </CardActions>
-            </Card>
-
-            <Card className={styles.card}>
-              <CardHeader className={styles.cardHeader}>
-                <Image
-                  src="/design.svg"
-                  alt="Design System Logo"
-                  width={64}
-                  height={64}
-                  priority
-                />
-                <CardTitle className={styles.cardTitle}>Design System</CardTitle>
-              </CardHeader>
-              <CardBody>
-                <p className={styles.cardBody}>
-                  Quickly apply harmonious and consistent styles to the components in your app with the Progress Design System.
-                </p>
-              </CardBody>
-              <CardActions>
-                <Button themeColor="primary" fillMode="flat">
-                  <a href="https://www.telerik.com/design-system" target="_blank">Find your style</a>
-                </Button>
-              </CardActions>
-            </Card>
-
-            <Card className={styles.card}>
-              <CardHeader className={styles.cardHeader}>
-                <Image
-                  src="/license.svg"
-                  alt="License Logo"
-                  width={64}
-                  height={64}
-                  priority
-                />
-                <CardTitle className={styles.cardTitle}>Activate your license</CardTitle>
-              </CardHeader>
-              <CardBody>
-                <ul className={styles.cardBodyList}>
-                  <li>Flexible Licensing Policy</li>
-                  <li>Maintenance & Support</li>
-                  <li>Total Cost of Ownership</li>
-                  <li>Enterprise-Ready Offerings</li>
-                </ul>
-              </CardBody>
-              <CardActions>
-                <Button themeColor="primary" fillMode="flat">
-                  <a href="https://www.telerik.com/purchase.aspx?filter=web#individual-products" target="_blank">Buy now</a>
-                </Button>
-              </CardActions>
-            </Card>
-          </div>
-        </div>
-      </section>
-
-      <footer className={styles.footer}>
-        <p>Copyright © 2023 Progress Software. All rights reserved.</p>
-      </footer>
+            &nbsp;
+            <Button onClick={exportPDF}>Export to PDF</Button>
+          </GridToolbar>
+          <GridColumn field="customerID" width="200px" />
+          <GridColumn
+            field="orderDate"
+            filter="date"
+            format="{0:D}"
+            width="300px"
+          />
+          <GridColumn field="shipName" width="280px" />
+          <GridColumn field="freight" filter="numeric" width="200px" />
+          <GridColumn
+            field="shippedDate"
+            filter="date"
+            format="{0:D}"
+            width="300px"
+          />
+          <GridColumn field="employeeID" filter="numeric" width="200px" />
+          <GridColumn
+            locked={true}
+            field="orderID"
+            filterable={false}
+            title="ID"
+            width="90px"
+          />
+        </Grid>
+      </ExcelExport>
+      <GridPDFExport
+        ref={(element) => {
+          _pdfExport = element;
+        }}
+        margin="1cm"
+      >
+        {
+          <Grid
+            data={process(orders, {
+              skip: dataState.skip,
+              take: dataState.take,
+            })}
+          >
+            <GridColumn field="customerID" width="200px" />
+            <GridColumn
+              field="orderDate"
+              filter="date"
+              format="{0:D}"
+              width="300px"
+            />
+            <GridColumn field="shipName" width="280px" />
+            <GridColumn field="freight" filter="numeric" width="200px" />
+            <GridColumn
+              field="shippedDate"
+              filter="date"
+              format="{0:D}"
+              width="300px"
+            />
+            <GridColumn field="employeeID" filter="numeric" width="200px" />
+            <GridColumn
+              locked={true}
+              field="orderID"
+              filterable={false}
+              title="ID"
+              width="90px"
+            />
+          </Grid>
+        }
+      </GridPDFExport>
     </div>
-  )
+  );
 }
